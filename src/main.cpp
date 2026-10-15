@@ -187,7 +187,7 @@ void loop() {
     M5Cardputer.update();
     auto state = M5Cardputer.Keyboard.keysState();
     if (!state.word.empty()) {
-        String key = state.word.c_str();
+        String key(state.word.data());
         key.toLowerCase();
         if (key == "j" && wavCount) selected = (selected + 1) % wavCount;
         else if (key == "k" && wavCount) selected = (selected + wavCount - 1) % wavCount;
