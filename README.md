@@ -4,38 +4,48 @@ A multi-format media player project for the **M5Stack Cardputer-Adv**, developed
 
 **MPX means multi-format playback**, not just MP3.
 
-## Intended format support
+## Current implementation
 
-| Format | Intended handling | Status |
-|---|---|---|
-| MP3 | Audio playback | Planned |
-| WAV | Audio playback | Planned |
-| M4A / AAC / FLAC / OGG | Evaluate decoder and memory compatibility | To be verified |
-| MP4 | Video container; video playback or supported audio-track playback must be evaluated separately | Research required |
-| WebM | Video container; VP8/VP9/AV1 video is likely beyond practical real-time decoding on this hardware; audio-track support depends on codec/container support | Research required |
+- Cardputer-Adv display and keyboard initialization.
+- microSD initialization using the project pin map.
+- Root-directory WAV browser (up to 32 files).
+- Initial WAV playback path using M5Unified's speaker API.
 
-Formats are not considered supported until tested on the actual Cardputer-Adv. Container support (MP4/WebM) does not automatically mean every audio/video codec inside the container is supported.
+### WAV compatibility in this milestone
+
+Only uncompressed PCM WAV, 16-bit, mono or stereo, 8–48 kHz is accepted. Put WAV files in the microSD root. Controls: **J** next, **K** previous, **P** play, **S** stop during playback, **R** rescan. The initial chunk-based playback implementation may have audible gaps between chunks and needs hardware validation.
+
+## Roadmap and priority
+
+1. **Audio first:** verify WAV playback and fix any hardware/API issues on the actual Cardputer-Adv.
+2. Add MP3 decoding and robust play/pause/stop/volume controls.
+3. Improve buffering so audio is continuous and responsive.
+4. Add library navigation, progress/seek, repeat/shuffle.
+5. Only after audio is stable, investigate video playback. Target policy: preserve the source frame rate up to 24 FPS; sources above 24 FPS are sampled down to a maximum of 24 FPS.
+6. For video experiments, evaluate a PC-converted RGB565 RAW format to avoid on-device video decoding.
 
 ## Hardware notes
 
-The project targets Cardputer-Adv. The current design reference lists these microSD SPI pins:
+The project design notes list these microSD SPI pins:
 
 - CS: GPIO 12
 - MOSI: GPIO 14
 - SCLK: GPIO 40
 - MISO: GPIO 39
 
-The audio path uses the onboard ES8311 codec and I2S. Its initialization should be based on verified Cardputer-Adv / M5Unified examples, not assumed from pin numbers alone.
+The audio path uses the onboard ES8311 codec and I2S through M5Unified. Hardware initialization and playback behavior must be validated on a real Cardputer-Adv.
 
-## Development plan
+## Planned format support
 
-1. PlatformIO build and hardware bring-up: display, keyboard, microSD.
-2. Reliable audio playback: MP3 and WAV first.
-3. Library/browser, play/pause, previous/next, volume, repeat and shuffle.
-4. Seek/progress display and spectrum visualization where the decoder exposes usable data.
-5. Investigate additional audio formats and what is feasible for MP4/WebM on the ESP32-S3's memory and CPU budget.
-6. Test and document each format on real hardware.
+| Format | Intended handling | Status |
+|---|---|---|
+| WAV | PCM playback | Initial implementation; not hardware-tested |
+| MP3 | Decode and playback | Planned |
+| M4A / AAC / FLAC / OGG | Evaluate decoder and memory compatibility | To be verified |
+| MP4 / WebM | Video/container feasibility research | Research required |
 
-## Current status
+Formats are not considered supported until tested on the actual Cardputer-Adv. Container support does not automatically imply support for every codec inside the container.
 
-This repository is at the scaffold/bring-up stage. The formats above are goals, not claims of implemented or verified support. See source comments and commit history for implementation status.
+## Build notes
+
+The current PlatformIO environment still uses esp32-s3-devkitc-1 as a provisional board target. Confirm/adjust the board definition and library versions against the actual Cardputer-Adv before treating a successful compile as proof of hardware compatibility.
