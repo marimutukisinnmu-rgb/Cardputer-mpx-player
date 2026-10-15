@@ -120,7 +120,7 @@ void serviceStopKey() {
     M5Cardputer.update();
     auto state = M5Cardputer.Keyboard.keysState();
     if (!state.word.empty()) {
-        String key = state.word.c_str();
+        String key(state.word.data());
         key.toLowerCase();
         if (key == "s") stopRequested = true;
     }
