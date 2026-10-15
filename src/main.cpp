@@ -42,7 +42,7 @@ void drawScreen() {
     d.println("WAV browser (PCM 16-bit)");
     if (wavCount == 0) {
         d.setCursor(4, 53);
-        d.println("Put .wav files in SD root");
+        d.println("Put .wav files in /music");
     } else {
         const size_t start = selected > 3 ? selected - 3 : 0;
         for (size_t i = start; i < wavCount && i < start + 5; ++i) {
@@ -67,15 +67,27 @@ bool endsWithWav(const char* name) {
 
 void scanWavFiles() {
     wavCount = 0;
-    File root = SD.open("/");
-    if (!root) return;
-    File f = root.openNextFile();
-    while (f && wavCount < 32) {
-        if (!f.isDirectory() && endsWithWav(f.name())) wavFiles[wavCount++] = String(f.name());
-        f.close();
-        f = root.openNextFile();
+    File musicDir = SD.open("/music");
+    if (!musicDir || !musicDir.isDirectory()) {
+        if (musicDir) musicDir.close();
+        statusText = "Missing /music folder";
+        selected = 0;
+        return;
     }
-    root.close();
+
+    File f = musicDir.openNextFile();
+    while (f && wavCount < 32) {
+        // Scan only files directly inside /music; do not enter subfolders.
+        if (!f.isDirectory() && endsWithWav(f.name())) {
+            String name = String(f.name());
+            int slash = name.lastIndexOf('/');
+            if (slash >= 0) name = name.substring(slash + 1);
+            wavFiles[wavCount++] = String("/music/") + name;
+        }
+        f.close();
+        f = musicDir.openNextFile();
+    }
+    musicDir.close();
     if (selected >= wavCount) selected = wavCount ? wavCount - 1 : 0;
 }
 
